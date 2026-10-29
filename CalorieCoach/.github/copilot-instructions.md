@@ -291,7 +291,7 @@ Use small, logically grouped changes.
 - Prefer clear, descriptive commit messages.
 - Summarize changes before requesting review.
 
-Do not commit or push changes unless the developer explicitly requests or authorizes that action.
+Do not commit or push ad hoc; for completed roadmap milestones, follow the default workflow in section 18 after all required verification gates pass.
 
 ## 15. Definition of Done
 
@@ -320,3 +320,21 @@ When implementing a task, provide:
 5. Any outstanding issues or manual steps required.
 
 Prefer practical solutions over speculative abstractions. Explain meaningful trade-offs, but avoid unnecessary complexity for a personal-use application.
+
+## 17. Shared Development Roadmap
+
+Use [`docs/ROADMAP.md`](../docs/ROADMAP.md) as the shared milestone sequence and source of milestone acceptance criteria. Keep changes incremental, satisfy the active milestone's definition of done, and do not implement future milestone scope unless explicitly requested.
+
+## 18. Milestone Completion and GitHub Backup Workflow
+
+- Implement one roadmap milestone at a time.
+- Run relevant automated checks and record their actual results.
+- For device-dependent features, distinguish automated verification from user-performed device verification.
+- Do not declare a milestone complete until its required verification gates pass.
+- Once a milestone's required verification is complete, use a focused feature branch, inspect the staged diff, commit only intended changes, push the branch, and open a pull request into the repository's default branch.
+- Verify remote push success before describing the code as backed up.
+- Never commit secrets, credentials, environment files, build artifacts, or unrelated user changes.
+- Never commit directly to the default branch, force-push, discard user changes, or merge a pull request without explicit user approval.
+- If authentication or permissions block an operation, explain the blocker and the next action without claiming success.
+- Keep unresolved security findings and dependency warnings documented accurately.
+- Ask before destructive actions or changes that materially alter repository configuration.

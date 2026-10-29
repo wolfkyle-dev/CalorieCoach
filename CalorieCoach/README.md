@@ -37,8 +37,10 @@ This command will move the starter code to the **example** directory and create 
 
 ### Other setup steps
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
+- Run `npm run lint` to check code with ESLint. See the [Expo ESLint guide](https://docs.expo.dev/guides/using-eslint/) for configuration details.
+- Run `npm test` for deterministic domain and SQLite repository tests. Tests use Node's built-in test runner and SQLite; use Node.js 22.6 or newer.
+- Local app data is stored in SQLite on iOS and Android. Web persistence is not configured.
+- The Home tab contains the daily food log. Use **Add food** to enter nutrition manually; logged dates follow the device's local calendar date.
 - Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
 
 ## Learn more
