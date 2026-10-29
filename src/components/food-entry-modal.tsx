@@ -25,6 +25,7 @@ interface FoodEntryModalProps {
   saving: boolean;
   error: string | null;
   onClose: () => void;
+  onDismiss: () => void;
   onSearch: () => void;
   onSubmit: (draft: ManualFoodDraft) => void;
 }
@@ -75,6 +76,7 @@ export function FoodEntryModal({
   saving,
   error,
   onClose,
+  onDismiss,
   onSearch,
   onSubmit,
 }: FoodEntryModalProps) {
@@ -130,6 +132,7 @@ export function FoodEntryModal({
   return (
     <Modal
       animationType="slide"
+      onDismiss={onDismiss}
       onRequestClose={onClose}
       presentationStyle="pageSheet"
       visible={visible}>

@@ -8,6 +8,7 @@ import test from 'node:test';
 
 import { migrateDatabase } from '../src/data/migrations.ts';
 import { createRepositories } from '../src/data/repositories.ts';
+import { transitionFoodEntryFlow } from '../src/domain/food-entry-flow.ts';
 import {
   calculateDailyNutritionTotals,
 } from '../src/domain/food-log.ts';
@@ -25,6 +26,26 @@ const nutrients = [
   { nutrient: { number: '205', unitName: 'G' }, amount: 30 },
   { nutrient: { number: '204', unitName: 'G' }, amount: 4 },
 ];
+
+test('iOS food search waits for the entry modal dismissal and can return to manual entry', () => {
+  let state = transitionFoodEntryFlow('closed', 'open-entry');
+  assert.equal(state, 'entry');
+
+  state = transitionFoodEntryFlow(state, 'request-search');
+  assert.equal(state, 'dismissing-entry-for-search');
+  assert.notEqual(state, 'search');
+
+  state = transitionFoodEntryFlow(state, 'entry-dismissed');
+  assert.equal(state, 'search');
+
+  state = transitionFoodEntryFlow(state, 'request-return-to-entry');
+  assert.equal(state, 'dismissing-search-for-entry');
+  assert.notEqual(state, 'entry');
+
+  state = transitionFoodEntryFlow(state, 'search-dismissed');
+  assert.equal(state, 'entry');
+  assert.equal(transitionFoodEntryFlow(state, 'close'), 'closed');
+});
 
 function brandedDetails(overrides = {}) {
   return {

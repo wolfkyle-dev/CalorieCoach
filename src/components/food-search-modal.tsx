@@ -34,6 +34,7 @@ interface FoodSearchModalProps {
   saving: boolean;
   error: string | null;
   onClose: () => void;
+  onDismiss: () => void;
   onSave: (selection: FoodSearchSelection, amount: number, mealId: string) => void;
 }
 
@@ -89,6 +90,7 @@ export function FoodSearchModal({
   saving,
   error: saveError,
   onClose,
+  onDismiss,
   onSave,
 }: FoodSearchModalProps) {
   const theme = useTheme();
@@ -191,6 +193,7 @@ export function FoodSearchModal({
   return (
     <Modal
       animationType="slide"
+      onDismiss={onDismiss}
       onRequestClose={close}
       presentationStyle="pageSheet"
       visible={visible}>
