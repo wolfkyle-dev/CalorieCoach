@@ -2,6 +2,10 @@
 
 CalorieCoach is a personal-use, iPhone-first nutrition tracker. Deliver milestones in order unless a dependency explicitly allows parallel work. Keep each milestone independently testable and usable, preserve local-first behavior, and do not pull future milestone scope forward without an explicit decision.
 
+## Current repository layout
+
+As of 2026-10-28, the Expo app is located at the repository root. Run npm, Expo, lint, test, and TypeScript commands from the repository root. Earlier M0–M2 verification notes below refer to the former `CalorieCoach\` project subdirectory.
+
 ## M0: Verify project setup and existing dashboard
 
 **Objective:** Establish a reproducible baseline for the existing Expo project and confirm what the dashboard does today.
@@ -33,8 +37,8 @@ CalorieCoach is a personal-use, iPhone-first nutrition tracker. Deliver mileston
 
 ### Verified M0 progress (2026-10-28)
 
-- The Git worktree root is `C:\Users\8kyle\.copilot\repos\copilot-worktrees\CalorieCoach\wolfkyle-dev-studious-goggles`; the Expo project is nested at `CalorieCoach\`. The app uses npm, Expo SDK `~58.0.20`, and React Native `0.88.0`.
-- `npm ci` completed from the Expo project root. npm reported 8 audit findings (5 low, 3 high); the findings were subsequently traced to Zod and deepmerge advisories, are not remediated, and are explicitly accepted for personal-use development.
+- At initial M0 inspection, the Git worktree root was `C:\Users\8kyle\.copilot\repos\copilot-worktrees\CalorieCoach\wolfkyle-dev-studious-goggles` and the Expo project was nested at `CalorieCoach\`. The app uses npm, Expo SDK `~58.0.20`, and React Native `0.88.0`; the nested project directory was later flattened to the repository root.
+- `npm ci` completed from the then-nested Expo project root. npm reported 8 audit findings (5 low, 3 high); the findings were subsequently traced to Zod and deepmerge advisories, are not remediated, and are explicitly accepted for personal-use development.
 - `npm run web -- --port 8085` started successfully. Expo Router and the web bundle compiled, and `curl.exe --head http://localhost:8085` returned HTTP 200 after the tab ref fix.
 - `.\node_modules\.bin\tsc.cmd --noEmit --pretty false` passed after the web tab ref fix.
 - User-verified iPhone checks through Expo Go: light/dark colors changed with the Expo Go appearance setting; top and bottom safe areas passed; Home and Explore tab navigation passed. These checks were performed by the user, not independently by Copilot.
@@ -127,7 +131,7 @@ CalorieCoach is a personal-use, iPhone-first nutrition tracker. Deliver mileston
 - Added fixed local Breakfast, Lunch, Dinner, and Snacks meals. Users can select a day with previous/next/today controls, manually enter a food, reference serving and consumed amount/unit, kcal, protein/carbohydrates/fat in grams, and meal; saved foods are labeled as manually entered. Editing retains the record IDs and updating the entry recalculates its display/totals; deletion requires an in-app confirmation.
 - Connected the existing dashboard to selected-day entries and calculated calorie/macro totals without replacing its screen or theme. Empty days display a clear empty state and zero totals. If any entry lacks a nutrient, that daily total is shown as unknown instead of summing an incomplete subset. Serving-scaled row values reuse `calculateFoodNutrition`.
 - Added deterministic tests for manual input validation, strict decimal parsing, nonnegative nutrients, invalid dates, multi-entry totals and unknown nutrient handling, empty-day totals, local date selection across boundaries, selected-day repository reads, add/edit/delete, rollback of related food and log writes, v2-to-v3 date migration, and persisted log entries after closing/reopening SQLite. No additional testing framework or production dependency was added.
-- Verification from `CalorieCoach\`: `npm ci` passed and npm reported the existing 8 audit findings (5 low, 3 high); `npm test` passed all 11 tests; `npm run lint` passed; `npx tsc --noEmit --pretty false` passed; `npx expo config --type public` passed with SDK 58 and the SQLite plugin; and `git diff --check` passed.
+- Verification from the then-current `CalorieCoach\` project directory: `npm ci` passed and npm reported the existing 8 audit findings (5 low, 3 high); `npm test` passed all 11 tests; `npm run lint` passed; `npx tsc --noEmit --pretty false` passed; `npx expo config --type public` passed with SDK 58 and the SQLite plugin; and `git diff --check` passed.
 - Web smoke test: `npm run web -- --port 8086` compiled the Expo Router and web bundles, and `curl.exe --head --max-time 10 http://localhost:8086` returned HTTP 200. This does not verify web persistence; the app's local SQLite layer is native-only.
 - `npx expo install --check` exited with status 1 because the pre-existing SDK 58 packages `@expo/ui`, `expo`, `expo-constants`, `expo-font`, `expo-image`, `expo-linking`, `expo-router`, `expo-splash-screen`, and `expo-system-ui` are behind current SDK patch expectations. They were not changed. The Node test runner reports a module-type performance warning; it does not affect the passing test results.
 - No dependency or Expo SDK versions were changed for M2. The previously accepted audit findings and reported SDK patch-version drift remain unchanged.
