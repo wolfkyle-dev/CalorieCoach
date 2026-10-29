@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type ComponentProps } from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -121,6 +122,7 @@ export function FoodSearchModal({
     .slice(0, 25);
 
   async function search() {
+    Keyboard.dismiss();
     const currentRequest = ++requestId.current;
     setReview(null);
     setResults([]);
