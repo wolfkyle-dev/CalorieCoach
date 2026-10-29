@@ -11,6 +11,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FoodEntryModal } from '@/components/food-entry-modal';
+import { FoodSearchModal } from '@/components/food-search-modal';
+import type { FoodSearchSelection } from '@/components/food-search-modal';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import {
   calculateDailyNutritionTotals,
@@ -31,14 +33,18 @@ export default function HomeScreen() {
     setSelectedDate,
     items,
     meals,
+    savedFoods,
     loading,
     saving,
     error,
     saveEntry,
+    saveProviderFood,
+    logSavedFood,
     deleteEntry,
     clearError,
   } = useFoodLog();
   const [formVisible, setFormVisible] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<FoodLogItem | null>(null);
   const [deletingItem, setDeletingItem] = useState<FoodLogItem | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -250,6 +256,10 @@ export default function HomeScreen() {
         setFormVisible(false);
         setEditingItem(null);
       }}
+      onSearch={() => {
+        clearError();
+        setSearchVisible(true);
+      }}
       onSubmit={(draft) => {
         void saveEntry(draft, editingItem ?? undefined).then((saved) => {
           if (saved) {
@@ -259,6 +269,29 @@ export default function HomeScreen() {
         });
       }}
     />}
+    {searchVisible && (
+      <FoodSearchModal
+        visible
+        selectedDate={formatLocalDate(selectedDate)}
+        meals={meals}
+        savedFoods={savedFoods}
+        saving={saving}
+        error={error}
+        onClose={() => setSearchVisible(false)}
+        onSave={(selection: FoodSearchSelection, amount, mealId) => {
+          const saveRequest = selection.kind === 'provider'
+            ? saveProviderFood(selection.details, amount, mealId)
+            : logSavedFood(selection.food, amount, mealId);
+          void saveRequest.then((saved) => {
+            if (saved) {
+              setSearchVisible(false);
+              setFormVisible(false);
+              setEditingItem(null);
+            }
+          });
+        }}
+      />
+    )}
     <Modal
       animationType="fade"
       transparent

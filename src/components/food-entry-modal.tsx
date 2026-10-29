@@ -25,6 +25,7 @@ interface FoodEntryModalProps {
   saving: boolean;
   error: string | null;
   onClose: () => void;
+  onSearch: () => void;
   onSubmit: (draft: ManualFoodDraft) => void;
 }
 
@@ -74,6 +75,7 @@ export function FoodEntryModal({
   saving,
   error,
   onClose,
+  onSearch,
   onSubmit,
 }: FoodEntryModalProps) {
   const theme = useTheme();
@@ -155,6 +157,15 @@ export function FoodEntryModal({
           contentContainerStyle={[styles.form, { paddingBottom: Math.max(insets.bottom, 24) }]}
           keyboardShouldPersistTaps="handled">
           <ThemedText themeColor="textSecondary">{selectedDate}</ThemedText>
+          {!item && (
+            <Pressable
+              accessibilityRole="button"
+              disabled={saving}
+              onPress={onSearch}
+              style={[styles.searchButton, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
+              <ThemedText type="smallBold" themeColor="accent">Search USDA foods</ThemedText>
+            </Pressable>
+          )}
           <Field
             label="Food name"
             value={draft.name}
@@ -335,6 +346,13 @@ const styles = StyleSheet.create({
   },
   headerButton: { minWidth: 56, minHeight: 44, justifyContent: 'center' },
   form: { padding: 20, gap: 20 },
+  searchButton: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   section: { gap: 12 },
   field: { gap: 6 },
   input: {

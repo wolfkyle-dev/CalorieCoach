@@ -168,6 +168,19 @@ As of 2026-10-28, the Expo app is located at the repository root. Run npm, Expo,
 
 **Definition of done:** Search and custom-food flows are usable, provider-specific behavior is isolated, privacy and provider terms are documented, and all integration behavior is testable without live API access.
 
+### Verified M3 progress (2026-10-29)
+
+- Added a typed `NutritionFoodProvider` boundary and a USDA FoodData Central adapter that expects a proxy base URL and FDC-compatible JSON. Search is bounded to 25 first-page results; provider responses are runtime-validated, duplicate results are removed, recognized nutrient identifiers and units are normalized, and unsupported branded serving units are rejected rather than guessed.
+- Added a result review flow launched from **Add food**. It shows source, data type, brand, reference serving, per-100 g/ml basis, scaled nutrient preview, and meal selection before saving. Missing nutrients remain unknown; branded results are labeled as potentially manufacturer-provided and rounded. Saving reuses the existing food-log repository and selected local date.
+- Added offline filtering and reuse of foods already stored locally. Existing manually entered foods remain editable through the established M2 form; selecting a saved food creates a transactional snapshot for the new entry so later edits do not mutate other log entries. Identical saved-food versions are grouped in the local results list.
+- Live requests are deliberately disabled in the app: the screen constructs the adapter without a proxy URL, no USDA API key is read or bundled, and the app never uses `DEMO_KEY`. The adapter's HTTP behavior is covered with mocked fetch responses, including bounded routes, network errors, timeout, HTTP 403, rate limiting, malformed JSON, and missing proxy configuration. No live USDA request or proxy-hosting infrastructure was created.
+- Documented USDA coverage and data types, CC0/public-domain status and requested attribution, manufacturer-sourced Branded Foods, the published default request limit, privacy implications, and the fact that proxy hosting costs have not been estimated. Before any hosting is added, the proxy provider, deployment steps, and expected costs require user review.
+- `npm test` passed all 18 tests (11 existing M1/M2 tests and 7 new M3 provider/persistence tests); the Node built-in runner emits its existing `MODULE_TYPELESS_PACKAGE_JSON` performance warning. The M3 tests also verify nutrient scaling and missing values, selected-date logging, source provenance, custom-food reuse, and SQLite close/reopen persistence. `npm run lint`, `.\node_modules\.bin\tsc.cmd --noEmit --pretty false`, `npx expo config --type public`, and `git diff --check` passed. After the final saved-food UI addition, `npm run web -- --port 8093` started and `curl.exe --head --max-time 10 http://localhost:8093` returned HTTP 200. No dependencies changed, so a clean install was not repeated.
+- `npx expo install --check` still exits 1 for the previously recorded SDK 58 patch drift in nine Expo packages; no upgrades were made. The existing npm audit findings remain unresolved and were not re-audited for this change.
+- Automated UI interaction tests are not configured. No physical-iPhone test was performed for this M3 change. Manual entry remains fully available, and saved foods can be filtered and reused offline through the new flow.
+
+**Status:** In progress; not complete. Live USDA search requires an approved server-side proxy, and the result-review flow cannot be exercised against real results until one is available. No proxy provider, deployment, or cost has been selected; request user review before adding hosting infrastructure. Automated UI interaction and physical-iPhone checks remain outstanding.
+
 ## M4: Implement barcode scanning and product lookup
 
 **Objective:** Allow a user to scan packaged-food barcodes and review matching product nutrition.
