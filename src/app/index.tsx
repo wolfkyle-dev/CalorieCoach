@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import {
   Modal,
   Platform,
@@ -11,6 +11,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FoodEntryModal } from '@/components/food-entry-modal';
+import { FoodSearchModal } from '@/components/food-search-modal';
+import type { FoodSearchSelection } from '@/components/food-search-modal';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import {
   calculateDailyNutritionTotals,
@@ -19,6 +21,10 @@ import {
   shiftLocalDate,
 } from '@/domain/food-log';
 import type { FoodLogItem } from '@/domain/food-log';
+import {
+  transitionFoodEntryFlow,
+} from '@/domain/food-entry-flow';
+import type { FoodEntryFlowState } from '@/domain/food-entry-flow';
 import { calculateFoodNutrition } from '@/domain/nutrition';
 import { useFoodLog } from '@/hooks/use-food-log';
 import { useTheme } from '@/hooks/use-theme';
@@ -31,14 +37,25 @@ export default function HomeScreen() {
     setSelectedDate,
     items,
     meals,
+    savedFoods,
     loading,
     saving,
     error,
     saveEntry,
+    saveProviderFood,
+    logSavedFood,
     deleteEntry,
     clearError,
   } = useFoodLog();
-  const [formVisible, setFormVisible] = useState(false);
+  const [foodEntryFlow, dispatchFoodEntryFlow] = useReducer(
+    transitionFoodEntryFlow,
+    'closed' as FoodEntryFlowState,
+  );
+  const formVisible = foodEntryFlow === 'entry';
+  const entryModalMounted = foodEntryFlow !== 'closed';
+  const searchVisible = foodEntryFlow === 'search';
+  const searchModalMounted =
+    searchVisible || foodEntryFlow === 'dismissing-search-for-entry';
   const [editingItem, setEditingItem] = useState<FoodLogItem | null>(null);
   const [deletingItem, setDeletingItem] = useState<FoodLogItem | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -184,7 +201,7 @@ export default function HomeScreen() {
               onPress={() => {
                 clearError();
                 setEditingItem(null);
-                setFormVisible(true);
+                dispatchFoodEntryFlow('open-entry');
               }}
               style={[styles.addButton, { backgroundColor: theme.accent }]}>
               <Text style={[styles.addButtonText, { color: theme.backgroundElement }]}>+ Add food</Text>
@@ -220,7 +237,7 @@ export default function HomeScreen() {
                         onEdit={() => {
                           clearError();
                           setEditingItem(item);
-                          setFormVisible(true);
+                          dispatchFoodEntryFlow('open-entry');
                         }}
                         onDelete={() => {
                           clearError();
@@ -239,26 +256,56 @@ export default function HomeScreen() {
         </View>
       </View>
     </ScrollView>
-    {formVisible && <FoodEntryModal
-      visible
+    {entryModalMounted && <FoodEntryModal
+      visible={formVisible}
       selectedDate={formatLocalDate(selectedDate)}
       meals={meals}
       item={editingItem}
       saving={saving}
       error={error}
       onClose={() => {
-        setFormVisible(false);
+        dispatchFoodEntryFlow('close');
         setEditingItem(null);
+      }}
+      onDismiss={() => dispatchFoodEntryFlow('entry-dismissed')}
+      onSearch={() => {
+        clearError();
+        dispatchFoodEntryFlow(Platform.OS === 'ios' ? 'request-search' : 'open-search');
       }}
       onSubmit={(draft) => {
         void saveEntry(draft, editingItem ?? undefined).then((saved) => {
           if (saved) {
-            setFormVisible(false);
+            dispatchFoodEntryFlow('close');
             setEditingItem(null);
           }
         });
       }}
     />}
+    {searchModalMounted && (
+      <FoodSearchModal
+        visible={searchVisible}
+        selectedDate={formatLocalDate(selectedDate)}
+        meals={meals}
+        savedFoods={savedFoods}
+        saving={saving}
+        error={error}
+        onDismiss={() => dispatchFoodEntryFlow('search-dismissed')}
+        onClose={() => dispatchFoodEntryFlow(
+          Platform.OS === 'ios' ? 'request-return-to-entry' : 'return-to-entry',
+        )}
+        onSave={(selection: FoodSearchSelection, amount, mealId) => {
+          const saveRequest = selection.kind === 'provider'
+            ? saveProviderFood(selection.details, amount, mealId)
+            : logSavedFood(selection.food, amount, mealId);
+          void saveRequest.then((saved) => {
+            if (saved) {
+              dispatchFoodEntryFlow('close');
+              setEditingItem(null);
+            }
+          });
+        }}
+      />
+    )}
     <Modal
       animationType="fade"
       transparent
