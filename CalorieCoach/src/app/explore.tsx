@@ -9,6 +9,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Collapsible } from '@/components/ui/collapsible';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useLocalSettings } from '@/hooks/use-local-settings';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function TabTwoScreen() {
@@ -18,6 +19,7 @@ export default function TabTwoScreen() {
     bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
   };
   const theme = useTheme();
+  const { settings, loading, saving, error, saveWeightUnit } = useLocalSettings();
 
   const contentPlatformStyle = Platform.select({
     android: {
@@ -56,6 +58,43 @@ export default function TabTwoScreen() {
               </ThemedView>
             </Pressable>
           </ExternalLink>
+        </ThemedView>
+
+        <ThemedView type="backgroundElement" style={styles.settingsCard}>
+          <ThemedText type="subtitle">Local preferences</ThemedText>
+          <ThemedText themeColor="textSecondary">
+            Saved on this device. Choose the unit you prefer for future weigh-ins.
+          </ThemedText>
+          <ThemedView style={styles.unitOptions}>
+            {(['kg', 'lb'] as const).map((unit) => {
+              const selected = settings?.preferredWeightUnit === unit;
+              return (
+                <Pressable
+                  key={unit}
+                  accessibilityRole="radio"
+                  accessibilityState={{
+                    checked: selected,
+                    disabled: Platform.OS === 'web' || loading || saving,
+                  }}
+                  disabled={Platform.OS === 'web' || loading || saving}
+                  onPress={() => void saveWeightUnit(unit)}
+                  style={[
+                    styles.unitOption,
+                    {
+                      backgroundColor: selected ? theme.accentSoft : theme.backgroundElement,
+                      borderColor: selected ? theme.accent : theme.border,
+                    },
+                  ]}>
+                  <ThemedText type={selected ? 'smallBold' : 'default'}>
+                    {unit === 'kg' ? 'Kilograms (kg)' : 'Pounds (lb)'}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </ThemedView>
+          {loading && <ThemedText themeColor="textSecondary">Loading preferences...</ThemedText>}
+          {saving && <ThemedText themeColor="textSecondary">Saving...</ThemedText>}
+          {error && <ThemedText accessibilityRole="alert">{error}</ThemedText>}
         </ThemedView>
 
         <ThemedView style={styles.sectionsWrapper}>
@@ -142,6 +181,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.six,
+  },
+  settingsCard: {
+    gap: Spacing.two,
+    marginHorizontal: Spacing.four,
+    padding: Spacing.four,
+    borderRadius: Spacing.three,
+  },
+  unitOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    paddingTop: Spacing.one,
+  },
+  unitOption: {
+    minHeight: 44,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.three,
   },
   centerText: {
     textAlign: 'center',
